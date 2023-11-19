@@ -352,6 +352,10 @@ class Script(QObject):
 
         self.app.activeWindow().activeView().setCurrentBrushPreset(brush)
 
+        # Make sure eraser mode is off
+        if self.app.action('erase_action').isChecked():
+            self.app.action('erase_action').trigger()
+
     def apply_simple_upscale(self):
         insert, _ = self.img_inserter(self.x, self.y, self.width, self.height)
         sel_image = self.get_selection_image()
@@ -454,7 +458,6 @@ class Script(QObject):
         self.apply_img2img(True)
 
     def action_prepare_inpaint(self):
-        self.status_changed.emit(STATE_WAIT)
         self.update_selection()
         if not self.doc:
             return
