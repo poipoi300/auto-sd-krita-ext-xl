@@ -334,12 +334,22 @@ class Script(QObject):
         )
 
     def apply_prepare_inpaint(self):
+        # Add a new layer to use as the inpaint mask
+        mask_types = ["transparencymask", "filtermask", "colorizemask", "transfommask", "selectionmask"]
+        if str(self.doc.activeNode().type()) in mask_types:
+            # Adding layers won't work on mask_types, so we need to add the layer from the parent
+            self.doc.setActiveNode(self.doc.activeNode().parentNode())
+        
         layer = self.doc.createNode("Inpaint Mask", "paintLayer")
         layer.setOpacity(204) # 80% opacity so the user can see the content behind the inpaint layer
         parent = self.doc.activeNode().parentNode()
-        parent.addChildNode(layer, None) # We don't keep track of this layer because we're intending to use it for future generations
+        
+        if parent is not None:
+            parent.addChildNode(layer, None) 
+        else: # This would happen in case of a global selection, we add to the root to avoid adding to None
+            self.doc.rootNode().addChildNode(layer, None)
 
-        # Switch to the brush too in case another tool was selected, so the user can immediately draw their inpaint mask
+        # Switch to the brush in case another tool was selected, so the user can immediately draw their inpaint mask
         self.app.action("KritaShape/KisToolBrush").trigger()
 
         all_brushes = self.app.resources('preset')
