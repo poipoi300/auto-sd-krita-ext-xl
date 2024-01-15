@@ -2,7 +2,8 @@
 
 Forked from https://github.com/Interpause/auto-sd-paint-ext
 
-> Extension for AUTOMATIC1111's webUI **and** SD.Next with Krita Plugin
+> Extension for AUTOMATIC1111's webUI ~~**and** SD.Next~~ with Krita Plugin
+(SD.Next support currently broken on master branch, use v1.1.2 release for latest working version)
 
 ![demo image](./docs/demo.webp)
 ## Update resilient!
