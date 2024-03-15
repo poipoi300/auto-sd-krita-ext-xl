@@ -1,7 +1,9 @@
+import os 
+
 from functools import partial
 from typing import Union
 
-from krita import QComboBox, QHBoxLayout, Qt, QValidator
+from krita import QComboBox, QHBoxLayout, Qt, QValidator, QCompleter, QStringListModel
 
 from ..config import Config
 from .misc import QLabel
@@ -13,19 +15,23 @@ class QOptionValidator(QValidator):
         self.opts = opts
 
     def validate(self, input, pos):
-        # Below validation rules make it impossible to type invalid options
-        if len(self.opts) < 2:
-            # List hasn't loaded yet
-            return QValidator.Intermediate, input, pos
+        if len(self.opts) < 2:  
+            return QValidator.Intermediate, input, pos 
         elif input in self.opts:
             return QValidator.Acceptable, input, pos
-        elif any(o.find(input) == 0 for o in self.opts):
+        else:  # Allow partial matches while typing
             return QValidator.Intermediate, input, pos
-        else:
-            return QValidator.Invalid, input, pos
 
     def fixup(self, input):
         return ""
+
+
+class QSubstringCompleter(QCompleter):
+    def __init__(self, options, parent=None):
+        super().__init__(options, parent)
+        self.setFilterMode(Qt.MatchContains)
+        self.setCaseSensitivity(Qt.CaseInsensitive)
+        self.setCompletionMode(QCompleter.PopupCompletion)
 
 
 class QComboBoxLayout(QHBoxLayout):
@@ -60,7 +66,10 @@ class QComboBoxLayout(QHBoxLayout):
         self.qcombo.view().setTextElideMode(Qt.ElideLeft)
         self.qcombo.setEditable(True)
         self.qcombo.setInsertPolicy(QComboBox.NoInsert)
+        self.qcombo.setFocusPolicy(Qt.StrongFocus) 
         self.qcombo.setMinimumWidth(10)
+        self.completer = QSubstringCompleter({}, self.qcombo)
+        self.qcombo.setCompleter(self.completer)
 
         self.addWidget(self.qlabel)
         self.addWidget(self.qcombo)
@@ -79,18 +88,16 @@ class QComboBoxLayout(QHBoxLayout):
         if "None" in opts:
             opts.remove("None")
             opts.insert(0, "None")
-
+            
         # prevent dropdown from closing when cfg_init is called by update
-        if set(opts) != self._items:
+        if set(opts) != self._items or not self.qcombo.hasFocus():
             self._items = set(opts)
-            # as using editable mode, text isn't affected by clearing options
-            self.qcombo.clear()
-            self.qcombo.addItems(opts)
+            self.completer.setModel(QStringListModel(opts))
             self.qcombo.setValidator(QOptionValidator(self._items))
 
-        # avoid resetting the auto-completer
-        if self.qcombo.currentText() != self.cfg(self.selected_cfg):
-            self.qcombo.setEditText(self.cfg(self.selected_cfg))
+            # avoid resetting saved entries
+            if self.qcombo.currentText() != self.cfg(self.selected_cfg):
+                self.qcombo.setEditText(self.cfg(self.selected_cfg))
 
     def cfg_connect(self):
         # Possible to get invalid by backspacing after selecting option
