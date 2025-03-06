@@ -1,3 +1,6 @@
+### UPDATE 
+No plans to maintain further. I'm now using [Acly's comfyUI plugin](https://github.com/Acly/krita-ai-diffusion) with a custom workflow and [a node I wrote](https://github.com/poipoi300/poi-nodes) for resizing inpaint regions.
+You can contact me on discord if you want the workflow.
 # auto-sd-krita-ext-xl
 
 Forked from https://github.com/Interpause/auto-sd-paint-ext
