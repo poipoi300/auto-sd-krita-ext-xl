@@ -1,5 +1,3 @@
-import os 
-
 from functools import partial
 from typing import Union
 
@@ -7,6 +5,9 @@ from krita import QComboBox, QHBoxLayout, Qt, QValidator, QCompleter, QStringLis
 
 from ..config import Config
 from .misc import QLabel
+
+from pathlib import Path
+DEBUG_FILE = Path(r"C:\Users\Administrator\Desktop\qt_debug.log")
 
 
 class QOptionValidator(QValidator):
